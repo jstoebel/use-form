@@ -3,10 +3,16 @@ import useForm from './useForm'
 
 const MyForm: React.FC = () => {
 
-  const {handleOnSubmit, handleFieldChange, fields} = useForm({
-    name: '',
-    email: ''
-  });
+  const {handleOnSubmit, handleFieldChange, fields} = useForm(
+    {
+      name: '',
+      email: ''
+    },
+    (e, fields) => {
+      console.log('hello from consumer submit callback!', fields);
+      
+    }
+  );
   return (
     <form onSubmit={handleOnSubmit}>
       <div>
