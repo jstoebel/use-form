@@ -5,8 +5,14 @@ const MyForm: React.FC = () => {
 
   const {handleOnSubmit, handleFieldChange, fields} = useForm(
     {
-      name: '',
-      email: ''
+      name: {
+        value: '',
+        validateOnSubmit: true
+      },
+      email: {
+        value: '',
+        validateOnSubmit: true
+      },
     },
     (e, fields) => {
       console.log('hello from consumer submit callback!', fields);
@@ -17,12 +23,12 @@ const MyForm: React.FC = () => {
     <form onSubmit={handleOnSubmit}>
       <div>
         <label>Name:</label>
-        <input type="text" name="name" value={fields.name} onChange={handleFieldChange} />
+        <input type="text" name="name" value={fields.name.value} onChange={handleFieldChange} />
       </div>
 
       <div>
         <label>Email:</label>
-        <input type="text" name="email" value={fields.email} onChange={handleFieldChange} />
+        <input type="text" name="email" value={fields.email.value} onChange={handleFieldChange} />
       </div>
 
       <div>

@@ -1,4 +1,6 @@
 import React, {useState} from 'react';
+
+import _ from 'lodash';
 /**
  * also:
  *  - user supplied callback for onSubmit
@@ -11,10 +13,32 @@ import React, {useState} from 'react';
  *  - state if form is submitting
  * 
  */
-const useForm = <IFields>(
-  initialValues: IFields,
-  submitCb: (e: React.FormEvent<HTMLFormElement>, fields: IFields) => void
+
+// the interface to represent fields
+interface BasicFields {
+  [fieldName: string]: {
+    value: string,
+    validateOnSubmit: boolean
+  }
+}
+
+// interface to represent the state of each field
+interface IFieldState {
+  [fieldName: string]: {
+    value: string,
+    errors: string[]
+  }
+}
+
+const useForm = <IFields extends BasicFields>(
+  initialFields: IFields,
+  submitCb: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void
 ) => {
+
+  // transform config object representing fields to a slimmer object mapping 
+  const initialValues = _.transform(initialFields, (result, fieldData, fieldName) => {
+    result[fieldName] = {value: fieldData.value, errors: []}
+  }, {} as IFieldState)
 
   const [fields, setFields] = useState(initialValues)
 
@@ -26,7 +50,9 @@ const useForm = <IFields>(
 
   function handleFieldChange(e: React.FormEvent<HTMLInputElement>) {
     const {value, name} = e.currentTarget
-    setFields({...fields, [name]: value})
+    const newFields = _.cloneDeep(fields)
+    newFields[name].value = value
+    setFields(newFields)
   }
 
   return {
