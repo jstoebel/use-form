@@ -35,17 +35,47 @@ const useForm = <IFields extends BasicFields>(
   submitCb: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void
 ) => {
 
-  // transform config object representing fields to a slimmer object mapping 
-  const initialValues = _.transform(initialFields, (result, fieldData, fieldName) => {
-    result[fieldName] = {value: fieldData.value, errors: []}
-  }, {} as IFieldState)
-
-  const [fields, setFields] = useState(initialValues)
+  const [fields, setFields] = useState(() => {
+    // transform config object representing fields to a slimmer object mapping 
+    return _.transform(initialFields, (result, fieldData, fieldName) => {
+      result[fieldName] = {value: fieldData.value, errors: []}
+    }, {} as IFieldState)
+  })
 
   function handleOnSubmit(e: React.FormEvent<HTMLFormElement>) {
     // user supplied callback
     e.preventDefault();
-    submitCb(e, fields)
+    validateSubmit()
+
+    if (canSubmit()) {
+      submitCb(e, fields)
+    } else {
+      console.log('form is not valid for sumbission');
+      
+    }
+  }
+
+  /**
+   * run onSubmit validations
+   */
+  function validateSubmit(): void {
+    _.each(fields, (fieldData) => {
+      if (!fieldData.value) {
+        fieldData.errors = ['field is required'];
+      } else {
+        fieldData.errors = [];
+      }
+    })
+  }
+
+  /**
+   * form is in a valid state for submision
+   */
+  function canSubmit(): boolean {
+    const errors = _.reduce(fields, (result, value, key) => result.concat(value.errors), [] as string[])
+    console.log("TCL: errors", errors)
+
+    return errors.length === 0
   }
 
   function handleFieldChange(e: React.FormEvent<HTMLInputElement>) {
