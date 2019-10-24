@@ -73,8 +73,6 @@ const useForm = <IFields extends BasicFields>(
    */
   function canSubmit(): boolean {
     const errors = _.reduce(fields, (result, value, key) => result.concat(value.errors), [] as string[])
-    console.log("TCL: errors", errors)
-
     return errors.length === 0
   }
 
