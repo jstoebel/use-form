@@ -3,13 +3,12 @@ import React, {useState} from 'react';
 import _ from 'lodash';
 /**
  * also:
- *  - user supplied callback for onSubmit
  *  - validations,
  *    - on submit validation
  *    - each can decide if it wants to validate onChange and/or onSubmit
  *    - Use rails validations
- *  - user supplied callback for onChange
- *  - user supplied callback for form submission response.
+ *  - user supplied callback for onSubmit which fires before submitting
+ *  - user supplied callback for form submission response which provides the submit result
  *  - state if form is submitting
  * 
  */
@@ -51,7 +50,6 @@ const useForm = <IFields extends BasicFields>(
       submitCb(e, fields)
     } else {
       console.log('form is not valid for sumbission');
-      
     }
   }
 

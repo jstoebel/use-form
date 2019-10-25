@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks'
-import useForm from './useForm'
+import useForm from './use-form'
 
 describe('useForm', () => {
   test('sets up fields', () => {
@@ -45,7 +45,13 @@ describe('useForm', () => {
     })
 
     it('submits on valid state', () => {
-      const hook = setupHook({startingValue: 'myName', submitCb: submitSpy})
+      const hook = setupHook(
+        {
+          startingValue: 'myName',
+          submitCb: submitSpy,
+          submitValidations: [validatesPresence()]
+        }
+      )
       act(() => {
         hook.current.handleOnSubmit(e)
       })
@@ -69,24 +75,33 @@ describe('useForm', () => {
       })
     })
   })
+
+
+  describe('validations', () => {
+    it('runs a validation function and adds an error', () => {
+      const hook = setupHook({startingValue: ''})
+    })
+  })
 })
 
 function setupHook(options) {
   
   const defaults = {
     startingValue: '', 
-    validateOnSubmit: true,
-    submitCb: (_e, _fields) => {}
+    submitCb: (_e, _fields) => {},
+    changeValidations: [],
+    submitValidations: [],
   }
 
-  const {startingValue, validateOnSubmit, submitCb} = Object.assign({}, defaults, options)
+  const {startingValue, submitCb, changeValidations, submitValidations} = Object.assign({}, defaults, options)
 
   const {result} = renderHook(() => {
     return useForm(
       {
         firstName: {
           value: startingValue,
-          validateOnSubmit
+          changeValidations,
+          submitValidations,
         },
       },
       submitCb
