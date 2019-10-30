@@ -17,7 +17,8 @@ import _ from 'lodash';
 interface BasicFields {
   [fieldName: string]: {
     value: string,
-    validateOnSubmit: boolean
+    submitValidations: ((fieldValue: string) => string | null)[]
+    changeValidations: ((fieldValue: string) => string | null)[]
   }
 }
 
@@ -57,12 +58,12 @@ const useForm = <IFields extends BasicFields>(
    * run onSubmit validations
    */
   function validateSubmit(): void {
-    _.each(fields, (fieldData) => {
-      if (!fieldData.value) {
-        fieldData.errors = ['field is required'];
-      } else {
-        fieldData.errors = [];
-      }
+    _.each(fields, (fieldData, fieldName) => {
+      const errors = initialFields[fieldName].submitValidations.map((validation) => {
+        return validation(fieldData.value)
+      }).filter((error) => !!error) as string[]
+
+      fieldData.errors = errors
     })
   }
 
@@ -76,9 +77,21 @@ const useForm = <IFields extends BasicFields>(
 
   function handleFieldChange(e: React.FormEvent<HTMLInputElement>) {
     const {value, name} = e.currentTarget
+    validateFieldChange(name);
+
     const newFields = _.cloneDeep(fields)
     newFields[name].value = value
     setFields(newFields)
+  }
+
+  function validateFieldChange(fieldName: string): void {
+    _.each(fields, (fieldData, fieldName) => {
+      const errors = initialFields[fieldName].changeValidations.map((validation) => {
+        return validation(fieldData.value)
+      }).filter((error) => !!error) as string[]
+
+      fieldData.errors = errors
+    })
   }
 
   return {

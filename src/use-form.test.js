@@ -1,8 +1,19 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import useForm from './use-form'
-import validatesPresence from './validations/validates-presence' 
 
 describe('useForm', () => {
+  let e;
+  let submitSpy;
+  beforeEach(() => {
+    e = {
+      preventDefault: () => {},
+      currentTarget: {
+        name: 'firstName',
+        value: 'myName'
+      }
+    }
+    submitSpy = jest.fn();
+  })
   test('sets up fields', () => {
     const hook = setupHook()
     expect(hook.current.fields).toEqual({
@@ -36,21 +47,12 @@ describe('useForm', () => {
   })
 
   describe('form submit', () => {
-    let e;
-    let submitSpy;
-    beforeEach(() => {
-      e = {
-        preventDefault: () => {}
-      }
-      submitSpy = jest.fn();
-    })
-
     it('submits on valid state', () => {
       const hook = setupHook(
         {
           startingValue: 'myName',
           submitCb: submitSpy,
-          submitValidations: [validatesPresence()]
+          submitValidations: []
         }
       )
       act(() => {
@@ -61,7 +63,11 @@ describe('useForm', () => {
     })
 
     it('does not submit on invalid state', () => {
-      const hook = setupHook({startingValue: '', submitCb: submitSpy})
+      const hook = setupHook({
+        startingValue: '',
+        submitCb: submitSpy,
+        submitValidations: [() => 'error message!']
+      })
 
       act(() => {
         hook.current.handleOnSubmit(e)
@@ -71,18 +77,81 @@ describe('useForm', () => {
       expect(hook.current.fields).toEqual({
         firstName: {
           value: '',
-          errors: ['field is required']
+          errors: ['error message!']
         }
       })
     })
   })
 
 
-  describe('validations', () => {
-    it('runs a validation function and adds an error', () => {
-      const hook = setupHook({startingValue: ''})
+  describe('submit validations', () => {
+    it('calls submit validators', () => {
+      const validationSpy = jest.fn()
+      const hook = setupHook(
+        {submitValidations: [validationSpy]}
+      )
+
+      act(() => {
+        hook.current.handleOnSubmit(e)
+      })
+
+      expect(validationSpy).toHaveBeenCalled()
+    })
+
+    it('updates errors', () => {
+      const submitValidations = [
+        () => 'my error',
+        () => null
+      ]
+
+      const hook = setupHook(
+        {submitValidations}
+      )
+
+      act(() => {
+        hook.current.handleOnSubmit(e)
+      })
+
+      const errors =  hook.current.fields.firstName.errors
+      expect(errors).toEqual(['my error'])
+
     })
   })
+
+  describe('change validations', () => {
+    it('calls cahnge validators', () => {
+      const validationSpy = jest.fn()
+      const hook = setupHook(
+        {changeValidations: [validationSpy]}
+      )
+
+      act(() => {
+        hook.current.handleFieldChange(e)
+      })
+
+      expect(validationSpy).toHaveBeenCalled()
+    })
+
+    it('updates errors', () => {
+      const changeValidations = [
+        () => 'my error',
+        () => null
+      ]
+
+      const hook = setupHook(
+        {changeValidations}
+      )
+
+      act(() => {
+        hook.current.handleFieldChange(e)
+      })
+
+      const errors =  hook.current.fields.firstName.errors
+      expect(errors).toEqual(['my error'])
+
+    })
+  })
+
 })
 
 function setupHook(options) {
