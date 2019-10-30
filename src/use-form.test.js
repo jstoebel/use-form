@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import useForm from './use-form'
+import validatesPresence from './validations/validates-presence' 
 
 describe('useForm', () => {
   test('sets up fields', () => {

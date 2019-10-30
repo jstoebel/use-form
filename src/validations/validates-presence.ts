@@ -1,3 +1,3 @@
-export default () => {
-  return (value: string) => value ? null : 'value is required'
+export default (message: string = 'value is required') => {
+  return (value: string) => value ? null : message
 }
