@@ -3,14 +3,7 @@ import React, {useState} from 'react';
 import _ from 'lodash';
 /**
  * also:
- *  - validations,
- *    - on submit validation
- *    - each can decide if it wants to validate onChange and/or onSubmit
- *    - Use rails validations
- *  - user supplied callback for onSubmit which fires before submitting
- *  - user supplied callback for form submission response which provides the submit result
  *  - state if form is submitting
- * 
  */
 
 // the interface to represent fields
@@ -32,7 +25,8 @@ interface IFieldState {
 
 const useForm = <IFields extends BasicFields>(
   initialFields: IFields,
-  submitCb: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void
+  submitCb: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void,
+  beforeSubmit?: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void
 ) => {
 
   const [fields, setFields] = useState(() => {
@@ -43,34 +37,38 @@ const useForm = <IFields extends BasicFields>(
   })
 
   function handleOnSubmit(e: React.FormEvent<HTMLFormElement>) {
+
     // user supplied callback
     e.preventDefault();
-    validateSubmit()
 
-    if (canSubmit()) {
+    if (beforeSubmit) beforeSubmit(e, fields);
+    const canSubmit = validateSubmit()
+    if (canSubmit) {
       submitCb(e, fields)
-    } else {
-      console.log('form is not valid for sumbission');
     }
   }
 
   /**
    * run onSubmit validations
+   * @returns if all fields pass validation.
    */
-  function validateSubmit(): void {
-    _.each(fields, (fieldData, fieldName) => {
+  function validateSubmit(): boolean {
+    const newFields = _.cloneDeep(fields)
+    _.each(newFields, (fieldData, fieldName) => {
       const errors = initialFields[fieldName].submitValidations.map((validation) => {
         return validation(fieldData.value)
       }).filter((error) => !!error) as string[]
-
       fieldData.errors = errors
     })
+
+    setFields(newFields)
+    return canSubmit(newFields)
   }
 
   /**
    * form is in a valid state for submision
    */
-  function canSubmit(): boolean {
+  function canSubmit(fields: IFieldState): boolean {
     const errors = _.reduce(fields, (result, value, key) => result.concat(value.errors), [] as string[])
     return errors.length === 0
   }

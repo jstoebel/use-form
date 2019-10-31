@@ -66,6 +66,7 @@ describe('useForm', () => {
       const hook = setupHook({
         startingValue: '',
         submitCb: submitSpy,
+        beforesubmit: () => {},
         submitValidations: [() => 'error message!']
       })
 
@@ -152,6 +153,19 @@ describe('useForm', () => {
     })
   })
 
+  describe('beforesubmit', () => {
+    it('calls function before submitting', () => {
+      const beforesubmitSpy = jest.fn()
+      const hook = setupHook({beforesubmit: beforesubmitSpy})
+
+      act(() => {
+        hook.current.handleOnSubmit(e)
+      })
+
+      expect(beforesubmitSpy).toHaveBeenCalledWith(e, hook.current.fields)
+    })
+  })
+
 })
 
 function setupHook(options) {
@@ -159,11 +173,12 @@ function setupHook(options) {
   const defaults = {
     startingValue: '', 
     submitCb: (_e, _fields) => {},
+    beforesubmit: (_e, _fields) => {},
     changeValidations: [],
     submitValidations: [],
   }
 
-  const {startingValue, submitCb, changeValidations, submitValidations} = Object.assign({}, defaults, options)
+  const {startingValue, submitCb, changeValidations, submitValidations, beforesubmit} = Object.assign({}, defaults, options)
 
   const {result} = renderHook(() => {
     return useForm(
@@ -174,7 +189,8 @@ function setupHook(options) {
           submitValidations,
         },
       },
-      submitCb
+      submitCb,
+      beforesubmit
     )
   });
 
