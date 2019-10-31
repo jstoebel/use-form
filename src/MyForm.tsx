@@ -1,5 +1,6 @@
 import React from 'react';
 import useForm from './use-form'
+import validatesPresense from './validations/validates-presence'
 
 const MyForm: React.FC = () => {
 
@@ -7,16 +8,17 @@ const MyForm: React.FC = () => {
     {
       name: {
         value: '',
-        validateOnSubmit: true
+        submitValidations: [validatesPresense()],
+        changeValidations: [validatesPresense()]
       },
       email: {
         value: '',
-        validateOnSubmit: true
+        submitValidations: [validatesPresense()],
+        changeValidations: [validatesPresense()]
       },
     },
     (e, fields) => {
       console.log('hello from consumer submit callback!', fields);
-      
     }
   );
   return (
@@ -24,11 +26,13 @@ const MyForm: React.FC = () => {
       <div>
         <label>Name:</label>
         <input type="text" name="name" value={fields.name.value} onChange={handleFieldChange} />
+        {fields.name.errors.map((error, i) => <span key={i}>{error}</span>)}
       </div>
 
       <div>
         <label>Email:</label>
         <input type="text" name="email" value={fields.email.value} onChange={handleFieldChange} />
+        {fields.email.errors.map((error, i) => <span key={i}>{error}</span>)}
       </div>
 
       <div>
