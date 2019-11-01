@@ -1,10 +1,5 @@
 import React, {useState} from 'react';
-
 import _ from 'lodash';
-/**
- * also:
- *  - state if form is submitting
- */
 
 // the interface to represent fields
 interface BasicFields {
@@ -23,6 +18,16 @@ interface IFieldState {
   }
 }
 
+/**
+ * A React hook for encapsulating state of a typical form.
+ * @param initialFields - the fields of the form with the initial values and validators
+ * @param submitCb - A callback to fire when user submits the form. Use this function to submit your data to the server.
+ * This callback is called with
+ *  - An event object
+ *  - The state of all fields
+ *  - The function `resolve`. Call this function with a boolean to indicate if the form was submitted successfully or not.
+ * @param beforeSubmit - a callback function called immediatly before validating the form.
+ */
 const useForm = <IFields extends BasicFields>(
   initialFields: IFields,
   submitCb: (
