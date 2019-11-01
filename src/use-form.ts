@@ -25,8 +25,15 @@ interface IFieldState {
 
 const useForm = <IFields extends BasicFields>(
   initialFields: IFields,
-  submitCb: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void,
-  beforeSubmit?: (e: React.FormEvent<HTMLFormElement>, fields: IFieldState) => void
+  submitCb: (
+    e: React.FormEvent<HTMLFormElement>,
+    fields: IFieldState,
+    resolve: (successful: boolean) => void
+  ) => void,
+  beforeSubmit?: (
+    e: React.FormEvent<HTMLFormElement>,
+    fields: IFieldState
+  ) => void
 ) => {
 
   const [fields, setFields] = useState(() => {
@@ -36,6 +43,8 @@ const useForm = <IFields extends BasicFields>(
     }, {} as IFieldState)
   })
 
+  const [status, setStatus] = useState<'fresh' | 'submitting' | 'successful' | 'failed'>('fresh')
+
   function handleOnSubmit(e: React.FormEvent<HTMLFormElement>) {
 
     // user supplied callback
@@ -44,7 +53,8 @@ const useForm = <IFields extends BasicFields>(
     if (beforeSubmit) beforeSubmit(e, fields);
     const canSubmit = validateSubmit()
     if (canSubmit) {
-      submitCb(e, fields)
+      setStatus('submitting');
+      submitCb(e, fields, resolve)
     }
   }
 
@@ -92,10 +102,19 @@ const useForm = <IFields extends BasicFields>(
     })
   }
 
+  function resolve(successful: boolean): void {
+    if (successful) {
+      setStatus('successful')
+    } else {
+      setStatus('failed')
+    }
+  }
+
   return {
     handleOnSubmit,
     handleFieldChange,
-    fields
+    fields,
+    status
   }
 }
 
