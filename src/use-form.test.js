@@ -59,7 +59,8 @@ describe('useForm', () => {
         hook.current.handleOnSubmit(e)
       })
 
-      expect(submitSpy).toHaveBeenCalledWith(e, hook.current.fields)
+      // not sure how to assert assert the signature of the function passed in.
+      expect(submitSpy).toHaveBeenCalledWith(e, hook.current.fields, expect.any(Function))
     })
 
     it('does not submit on invalid state', () => {
@@ -153,7 +154,7 @@ describe('useForm', () => {
     })
   })
 
-  describe('beforesubmit', () => {
+  describe('beforeSubmit', () => {
     it('calls function before submitting', () => {
       const beforesubmitSpy = jest.fn()
       const hook = setupHook({beforesubmit: beforesubmitSpy})
@@ -166,6 +167,53 @@ describe('useForm', () => {
     })
   })
 
+  describe('form state', () => {
+
+    it('initializes as "fresh"', () => {
+      const hook = setupHook();
+      expect(hook.current.status).toEqual('fresh')
+    })
+
+    it('has state "submitting" when submitting', () => {
+      const hook = setupHook({
+        submitCb: (e, fields, done) => {}
+      });
+
+      act(() => {
+        hook.current.handleOnSubmit(e)
+      })
+
+      expect(hook.current.status).toEqual('submitting');
+    })
+
+    it('has state "successful" when done callback given `true`', () => {
+      const hook = setupHook({
+        submitCb: (e, fields, done) => {
+          done(true)
+        }
+      });
+
+      act(() => {
+        hook.current.handleOnSubmit(e)
+      })
+
+      expect(hook.current.status).toEqual('successful');
+    })
+
+    it('has state "failed" when done callback given `false`', () => {
+      const hook = setupHook({
+        submitCb: (e, fields, done) => {
+          done(false)
+        }
+      });
+
+      act(() => {
+        hook.current.handleOnSubmit(e)
+      })
+
+      expect(hook.current.status).toEqual('failed');
+    })
+  })
 })
 
 function setupHook(options) {
